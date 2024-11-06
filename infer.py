@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
     infer(checkpoint_path='./checkpoints/v1.1-cfg-modified/miniunet_49.pth',
           base_channels=64,
-          step=20,
+          step=50,
           num_imgs=100,
           y=torch.tensor(y),
           cfg_scale=7.0,
