@@ -4,7 +4,7 @@ batch_size: 16  # batch_size小一些
 lr_adjust_epoch: 25 # 学习率调整的epoch，降为原有的10%
 batch_print_interval: 100 # 打印间隔，以batch为单位
 checkpoint_save_interval: 10 # 模型保存间隔，以epoch为单位
-save_path: './checkpoints/v1.1-cfg'  # 模型保存路径
+save_path: './checkpoints/v1.1-cfg-modified'  # 模型保存路径
 use_cfg: True  # 是否使用classifier-free guidance，开启就可以训练条件生成模型了
 device: 'cuda' # cuda、cpu、mps(only macbook)
-caption_drop_rate: 0.1
+caption_drop_rate: 0.5

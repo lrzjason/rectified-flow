@@ -6,12 +6,32 @@ if __name__ == '__main__':
     # 画Loss曲线看收敛情况
     # 读取pth文件，获得loss_list
     checkpoint = torch.load('./checkpoints/v1.1-cfg/miniunet_49.pth')
-    loss_list = checkpoint['loss_list']
+    loss_list = checkpoint['loss_list'][175000:]
+    print(loss_list)
 
-    # 画图
+    fig = plt.figure(figsize=(10, 7)) 
+    rows = 1
+    columns = 2
+    fig.add_subplot(rows, columns, 1) 
     plt.plot(loss_list)
     plt.xlabel('Iteration')
     plt.ylabel('Loss')
-    plt.title('Loss Curve')
+    plt.title('Ori Loss Curve')
     plt.tight_layout()
+    
+    fig.add_subplot(rows, columns, 2) 
+    checkpoint = torch.load('./checkpoints/v1.1-cfg-modified/miniunet_49.pth')
+    loss_list = checkpoint['loss_list'][175000:]
+    plt.plot(loss_list)
+    plt.xlabel('Iteration')
+    plt.ylabel('Loss')
+    plt.title('Modified Loss Curve')
+    plt.tight_layout()
+
+    # 画图
+    
     plt.show()
+
+
+    # 画图
+    plt.plot(loss_list)

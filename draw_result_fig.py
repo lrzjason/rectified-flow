@@ -3,7 +3,8 @@ import cv2
 import os
 
 # 读取results文件夹的100张图片
-img_folder = './results/cfg'
+img_folder = './results/cfg-modified'
+os.makedirs(img_folder, exist_ok=True)
 img_files = [
     os.path.join(img_folder, f) for f in os.listdir(img_folder)
     if f.endswith('.png')

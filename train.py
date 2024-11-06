@@ -38,6 +38,7 @@ def train(config: str):
     save_path = config.get('save_path', './checkpoints')
     use_cfg = config.get('use_cfg', False)
     device = config.get('device', 'cuda')
+    caption_drop_rate = config.get('caption_drop_rate', 0.5)
 
     # 打印训练参数
     print('Training config:')
@@ -86,36 +87,50 @@ def train(config: str):
     # 训练循环
     for epoch in range(epochs):
         for batch, data in enumerate(dataloader):
-            x_1, y = data  # x_1原始图像，y是标签，用于CFG
+            x_0, y = data  # x_0原始图像，y是标签，用于CFG
             # 均匀采样[0, 1]的时间t randn 标准正态分布
-            t = torch.rand(x_1.size(0))
+            t = torch.rand(x_0.size(0))
+            
 
             # 生成flow（实际上是一个点）
-            x_t, x_0 = rf.create_flow(x_1, t)
+            x_t, x_1 = rf.create_flow(x_0, t)
 
             # 4090 大概占用显存3G
             x_t = x_t.to(device)
             x_0 = x_0.to(device)
             x_1 = x_1.to(device)
             t = t.to(device)
+            y = y.to(device)
 
             optimizer.zero_grad()
 
-            # 这里我们要做一个数据的复制和拼接，复制原始x_1，把一半的y替换成-1表示无条件生成，这里也可以直接有条件、无条件累计两次计算两次loss的梯度
+            # 这里我们要做一个数据的复制和拼接，复制原始x_0，把一半的y替换成-1表示无条件生成，这里也可以直接有条件、无条件累计两次计算两次loss的梯度
             # 一定的概率，把有条件生成换为无条件的 50%的概率 [x_t, x_t] [t, t]
+            # if use_cfg:
+            #     y = torch.cat([y, -torch.ones_like(y)], dim=0)
+            #     x_1 = torch.cat([x_1, x_1.clone()], dim=0)
+            #     x_0 = torch.cat([x_0, x_0.clone()], dim=0)
+            #     y = y.to(device)
+            # else:
+            #     y = None
+            
+            # when train a model with CFG, we need to drop caption y to train an unconditional model
             if use_cfg:
-                x_t = torch.cat([x_t, x_t.clone()], dim=0)
-                t = torch.cat([t, t.clone()], dim=0)
-                y = torch.cat([y, -torch.ones_like(y)], dim=0)
-                x_1 = torch.cat([x_1, x_1.clone()], dim=0)
-                x_0 = torch.cat([x_0, x_0.clone()], dim=0)
-                y = y.to(device)
+                # drop caption y with prob 0.1
+                if torch.rand(1) < caption_drop_rate:
+                    y = None
+            # only train unconditional model
             else:
                 y = None
-
+            
             v_pred = model(x=x_t, t=t, y=y)
 
-            loss = rf.mse_loss(v_pred, x_1, x_0)
+            loss = rf.mse_loss(v_pred, x_0, x_1)
+            
+            # loss = torch.mean(
+            #     (weighting.float() * (model_pred.float() - target.float()) ** 2).reshape(target.shape[0], -1),
+            #     1,
+            # )
 
             loss.backward()
             optimizer.step()
@@ -140,4 +155,4 @@ def train(config: str):
 
 
 if __name__ == '__main__':
-    train(config='./config/train_config.yaml')
+    train(config='./config/train_config_modified.yaml')

@@ -308,6 +308,7 @@ class MiniUnet(nn.Module):
                 yemb[y == -1] = 0.0
                 temb += yemb
             else:  # 文字版本
+                
                 pass
         # 下采样
         for layer in self.down1:
@@ -335,7 +336,7 @@ class MiniUnet(nn.Module):
 
 
 if __name__ == '__main__':
-    device = 'mps'
+    device = 'cuda'
     model = MiniUnet()
     model = model.to(device)
     x = torch.randn(2, 1, 28, 28).to(device)

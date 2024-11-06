@@ -55,14 +55,18 @@ def infer(
             # Euler法间隔
             dt = 1.0 / step
 
-            # 初始的x_t就是x_0，标准高斯噪声
+            # 初始的x_t就是x_1，标准高斯噪声
             x_t = torch.randn(1, 1, 28, 28).to(device)
 
             # 提取第i个图像的标签条件y_i
             if y is not None:
                 y_i = y[i].unsqueeze(0)
 
-            for j in range(step):
+            # because 0 is the clean image, we reverse the timesteps to denoise the image
+            timesteps = [*range(step)]
+            timesteps.reverse()
+            # timesteps = list(range_list.reverse())
+            for j in timesteps:
                 if j % 10 == 0:
                     print(f'Generating {i}th image, step {j}...')
                 t = j * dt
@@ -99,13 +103,13 @@ if __name__ == '__main__':
     # label一个数字出现十次
     y = []
     for i in range(10):
-        y.extend([i] * 10)
+        y.extend([i]*10)
 
-    infer(checkpoint_path='./checkpoints/v1.1-cfg/miniunet_49.pth',
+    infer(checkpoint_path='./checkpoints/v1.1-cfg-modified/miniunet_49.pth',
           base_channels=64,
-          step=10,
+          step=20,
           num_imgs=100,
           y=torch.tensor(y),
           cfg_scale=7.0,
-          save_path='./results/cfg',
+          save_path='./results/cfg-modified',
           device='cuda')
