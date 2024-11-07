@@ -57,8 +57,8 @@ class RectifiedFlow:
 
         # 求loss函数，是一个MSE，最后维度是[B]
 
-        # loss = F.mse_loss(x_0 - x_1, v)
-        loss = torch.mean((v - x_1 - x_0)**2)
+        loss = F.mse_loss(x_0 - x_1, v)
+        # loss = torch.mean((v - x_1 - x_0)**2)
 
         return loss
 
